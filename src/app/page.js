@@ -251,26 +251,20 @@ export default function Home() {
   };
 
     return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-        {/* Header */}
-        <header className="bg-white shadow-lg">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="text-center">
-          <Link href="/" target='_blank'>  <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-             🎮 Pokemon API Explorer
-             </h1></Link>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16">
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+              🎮 Pokemon API Explorer
+            </h1>
             <p className="text-lg text-gray-600 mb-8">
               Discover and explore Pokemon data with our interactive API
             </p>
             
-            {/* Navigation */}
+            {/* Team Builder Toggle */}
             <div className="flex justify-center gap-4 mb-6">
-              <Link 
-                href="/teams"
-                className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-              >
-                🏆 View Teams
-              </Link>
               <button
                 onClick={() => setTeamBuilder(!teamBuilder)}
                 className={`font-semibold py-2 px-4 rounded-lg transition-colors ${
@@ -301,10 +295,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Error Display */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">

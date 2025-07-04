@@ -61,24 +61,17 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <header className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <Link href="/">
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-                🏆 Pokemon Teams
-              </h1>
-            </Link>
-            <p className="text-lg text-gray-600 mb-8">
-              View and manage your Pokemon teams
-            </p>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+            🏆 Pokemon Teams
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            View and manage your Pokemon teams
+          </p>
+        </div>
         {teams.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏆</div>
