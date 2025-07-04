@@ -13,19 +13,27 @@ export default function Home() {
   const [totalPokemon, setTotalPokemon] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(true);
 
   const limit = 20;
 
   // Fetch Pokemon list
-  const fetchPokemon = async (offset = 0) => {
+  const fetchPokemon = async (offset = 0, append = false) => {
     setLoading(true);
     setError('');
     try {
       const response = await fetch(`/api/pokemon?limit=${limit}&offset=${offset}`);
       if (!response.ok) throw new Error('Failed to fetch Pokemon');
       const data = await response.json();
-      setPokemon(data.results);
+      
+      if (append) {
+        setPokemon(prev => [...prev, ...data.results]);
+      } else {
+        setPokemon(data.results);
+      }
+      
       setTotalPokemon(data.count);
+      setHasMore(offset + limit < data.count);
     } catch (err) {
       setError('Failed to load Pokemon data');
       console.error(err);
@@ -85,11 +93,37 @@ export default function Home() {
     }
   };
 
-  // Handle pagination
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    fetchPokemon(newPage * limit);
+  // Handle infinite scroll
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      const nextOffset = pokemon.length;
+      setCurrentPage(Math.floor(nextOffset / limit));
+      fetchPokemon(nextOffset, true);
+    }
   };
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) {
+        observer.unobserve(sentinel);
+      }
+    };
+  }, [hasMore, loading, pokemon.length]);
 
   // Handle image navigation
   const handleImageChange = (direction) => {
@@ -289,27 +323,22 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-center mt-8">
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0 || loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-600"
-                >
-                  Previous
-                </button>
-                <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
-                  Page {currentPage + 1} of {Math.ceil(totalPokemon / limit)}
-                </span>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= Math.ceil(totalPokemon / limit) - 1 || loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-600"
-                >
-                  Next
-                </button>
-              </div>
+            {/* Infinite Scroll Sentinel */}
+            <div id="scroll-sentinel" className="h-10 flex items-center justify-center mt-8">
+              {loading && (
+                <div className="flex items-center text-blue-600">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading more Pokemon...
+                </div>
+              )}
+                             {!hasMore && pokemon.length > 0 && (
+                 <div className="text-gray-500 text-sm">
+                   You&apos;ve reached the end! ({pokemon.length} of {totalPokemon} Pokemon loaded)
+                 </div>
+               )}
             </div>
           </div>
         )}
