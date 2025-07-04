@@ -14,6 +14,9 @@ export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(true);
+  const [teamBuilder, setTeamBuilder] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState([]);
+  const [teamName, setTeamName] = useState('');
 
   const limit = 20;
 
@@ -125,6 +128,64 @@ export default function Home() {
     };
   }, [hasMore, loading, pokemon.length]);
 
+  // Team building functions
+  const addToTeam = (pokemon) => {
+    if (currentTeam.length >= 5) {
+      setError('Team is full! Maximum 5 Pokemon allowed.');
+      return;
+    }
+    
+    const isAlreadyInTeam = currentTeam.some(p => p.id === pokemon.id);
+    if (isAlreadyInTeam) {
+      setError('This Pokemon is already in your team!');
+      return;
+    }
+    
+    setCurrentTeam(prev => [...prev, pokemon]);
+    setError('');
+  };
+
+  const removeFromTeam = (pokemonId) => {
+    setCurrentTeam(prev => prev.filter(p => p.id !== pokemonId));
+  };
+
+  const saveTeam = () => {
+    if (currentTeam.length !== 5) {
+      setError('Team must have exactly 5 Pokemon!');
+      return;
+    }
+    
+    if (!teamName.trim()) {
+      setError('Please enter a team name!');
+      return;
+    }
+    
+    const newTeam = {
+      id: Date.now(),
+      name: teamName.trim(),
+      pokemon: currentTeam,
+      createdAt: new Date().toISOString()
+    };
+    
+    const existingTeams = JSON.parse(localStorage.getItem('pokemon-teams') || '[]');
+    const updatedTeams = [...existingTeams, newTeam];
+    localStorage.setItem('pokemon-teams', JSON.stringify(updatedTeams));
+    
+    // Reset team builder
+    setCurrentTeam([]);
+    setTeamName('');
+    setTeamBuilder(false);
+    setError('');
+    
+    alert('Team saved successfully!');
+  };
+
+  const clearTeam = () => {
+    setCurrentTeam([]);
+    setTeamName('');
+    setError('');
+  };
+
   // Handle image navigation
   const handleImageChange = (direction) => {
     if (!selectedPokemon) return;
@@ -202,6 +263,26 @@ export default function Home() {
               Discover and explore Pokemon data with our interactive API
             </p>
             
+            {/* Navigation */}
+            <div className="flex justify-center gap-4 mb-6">
+              <Link 
+                href="/teams"
+                className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                🏆 View Teams
+              </Link>
+              <button
+                onClick={() => setTeamBuilder(!teamBuilder)}
+                className={`font-semibold py-2 px-4 rounded-lg transition-colors ${
+                  teamBuilder 
+                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    : 'bg-green-500 hover:bg-green-600 text-white'
+                }`}
+              >
+                {teamBuilder ? '❌ Cancel Team Builder' : '⚔️ Build Team'}
+              </button>
+            </div>
+            
             {/* Search Bar */}
             <div className="max-w-md mx-auto mb-8">
               <div className="relative">
@@ -231,40 +312,136 @@ export default function Home() {
           </div>
         )}
 
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Search Results</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {searchResults.map((poke) => (
-                <div
-                  key={poke.id}
-                  onClick={() => fetchPokemonDetails(poke.id)}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer p-4"
-                >
-                  <div className="text-center">
+        {/* Team Builder Interface */}
+        {teamBuilder && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">⚔️ Team Builder</h2>
+            
+            {/* Team Name Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Team Name:
+              </label>
+              <input
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="Enter your team name..."
+                className="w-full px-3 py-2 border bg-black border-black-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
+            {/* Current Team Display */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Current Team ({currentTeam.length}/5):
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                {currentTeam.map((poke) => (
+                  <div key={poke.id} className="bg-gray-50 rounded-lg p-3 text-center relative">
+                    <button
+                      onClick={() => removeFromTeam(poke.id)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs hover:bg-red-600"
+                    >
+                      ×
+                    </button>
                     <Image
                       src={poke.sprites.front_default}
                       alt={poke.name}
-                      className="w-24 h-24 mx-auto mb-3"
-                      height={96}
-                      width={96}
+                      className="w-12 h-12 mx-auto mb-2"
+                      height={48}
+                      width={48}
                       unoptimized
                     />
-                    <h3 className="text-lg font-semibold text-gray-800 capitalize mb-2">
+                    <h4 className="font-semibold text-gray-800 capitalize text-sm">
                       {poke.name}
-                    </h3>
-                    <div className="flex justify-center gap-2">
+                    </h4>
+                    <div className="flex justify-center gap-1">
                       {poke.types.map((type) => (
                         <span
                           key={type.type.name}
-                          className={`px-2 py-1 rounded-full text-xs font-medium text-white ${typeColors[type.type.name] || 'bg-gray-400'}`}
+                          className={`px-1 py-0.5 rounded-full text-xs font-medium text-white ${typeColors[type.type.name] || 'bg-gray-400'}`}
                         >
                           {type.type.name}
                         </span>
                       ))}
                     </div>
                   </div>
+                ))}
+                {Array.from({ length: 5 - currentTeam.length }).map((_, index) => (
+                  <div key={index} className="bg-gray-100 rounded-lg p-3 text-center border-2 border-dashed border-gray-300">
+                    <div className="text-gray-400 text-sm">Empty Slot</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Team Actions */}
+            <div className="flex gap-4">
+              <button
+                onClick={saveTeam}
+                disabled={currentTeam.length !== 5 || !teamName.trim()}
+                className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                💾 Save Team
+              </button>
+              <button
+                onClick={clearTeam}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                🗑️ Clear Team
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Search Results */}
+        {searchResults.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Search Results</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {searchResults.map((poke, index) => (
+                <div
+                  key={`${poke.id}-${index}`}
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4"
+                >
+                                      <div className="text-center">
+                      <div 
+                        onClick={() => fetchPokemonDetails(poke.id)}
+                        className="cursor-pointer"
+                      >
+                        <Image
+                          src={poke.sprites.front_default}
+                          alt={poke.name}
+                          className="w-24 h-24 mx-auto mb-3"
+                          height={96}
+                          width={96}
+                          unoptimized
+                        />
+                        <h3 className="text-lg font-semibold text-gray-800 capitalize mb-2">
+                          {poke.name}
+                        </h3>
+                        <div className="flex justify-center gap-2">
+                          {poke.types.map((type) => (
+                            <span
+                              key={type.type.name}
+                              className={`px-2 py-1 rounded-full text-xs font-medium text-white ${typeColors[type.type.name] || 'bg-gray-400'}`}
+                            >
+                              {type.type.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      {teamBuilder && (
+                        <button
+                          onClick={() => addToTeam(poke)}
+                          disabled={currentTeam.some(p => p.id === poke.id) || currentTeam.length >= 5}
+                          className="mt-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white text-sm font-semibold py-1 px-3 rounded transition-colors"
+                        >
+                          {currentTeam.some(p => p.id === poke.id) ? 'Added' : 'Add to Team'}
+                        </button>
+                      )}
+                    </div>
                 </div>
               ))}
             </div>
@@ -290,34 +467,47 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {pokemon.map((poke) => (
+              {pokemon.map((poke, index) => (
                 <div
-                  key={poke.id}
-                  onClick={() => fetchPokemonDetails(poke.id)}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer p-4 hover:scale-105"
+                  key={`${poke.id}-${index}`}
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-4 hover:scale-105"
                 >
                   <div className="text-center">
-                    <Image
-                      src={poke.sprites.front_default}
-                      alt={poke.name}
-                      className="w-24 h-24 mx-auto mb-3"
-                      height={96}
-                      width={96}
-                      unoptimized
-                    />
-                    <h3 className="text-lg font-semibold text-gray-800 capitalize mb-2">
-                      #{poke.id} {poke.name}
-                    </h3>
-                    <div className="flex justify-center gap-2">
-                      {poke.types.map((type) => (
-                        <span
-                          key={type.type.name}
-                          className={`px-2 py-1 rounded-full text-xs font-medium text-white ${typeColors[type.type.name] || 'bg-gray-400'}`}
-                        >
-                          {type.type.name}
-                        </span>
-                      ))}
+                    <div 
+                      onClick={() => fetchPokemonDetails(poke.id)}
+                      className="cursor-pointer"
+                    >
+                      <Image
+                        src={poke.sprites.front_default}
+                        alt={poke.name}
+                        className="w-24 h-24 mx-auto mb-3"
+                        height={96}
+                        width={96}
+                        unoptimized
+                      />
+                      <h3 className="text-lg font-semibold text-gray-800 capitalize mb-2">
+                        #{poke.id} {poke.name}
+                      </h3>
+                      <div className="flex justify-center gap-2">
+                        {poke.types.map((type) => (
+                          <span
+                            key={type.type.name}
+                            className={`px-2 py-1 rounded-full text-xs font-medium text-white ${typeColors[type.type.name] || 'bg-gray-400'}`}
+                          >
+                            {type.type.name}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+                    {teamBuilder && (
+                      <button
+                        onClick={() => addToTeam(poke)}
+                        disabled={currentTeam.some(p => p.id === poke.id) || currentTeam.length >= 5}
+                        className="mt-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white text-sm font-semibold py-1 px-3 rounded transition-colors"
+                      >
+                        {currentTeam.some(p => p.id === poke.id) ? 'Added' : 'Add to Team'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
