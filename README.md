@@ -13,6 +13,10 @@ A Next.js 15 API wrapper for the PokeAPI with enhanced features, caching, and se
 - 🛡️ **Error Handling**: Comprehensive error handling and validation
 ## Images
 ![My Image](public/Screenshot1.png)
+![My Image](public/Screenshot2.png)
+![My Image](public/Screenshot3.png)
+![My Image](public/Screenshot4.png)
+![My Image](public/Screenshot5.png)
 
 ## API Endpoints
 
