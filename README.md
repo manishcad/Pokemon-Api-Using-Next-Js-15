@@ -11,6 +11,8 @@ A Next.js 15 API wrapper for the PokeAPI with enhanced features, caching, and se
 - 📄 **Pagination**: Built-in pagination support
 - 🚀 **Caching**: Optimized caching with stale-while-revalidate
 - 🛡️ **Error Handling**: Comprehensive error handling and validation
+## Images
+![My Image](public/Screenshot1.png)
 
 ## API Endpoints
 
