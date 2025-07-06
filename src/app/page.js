@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+
 export default function Home() {
   const [pokemon, setPokemon] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -105,28 +106,12 @@ export default function Home() {
     }
   };
 
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const sentinel = document.getElementById('scroll-sentinel');
-    if (sentinel) {
-      observer.observe(sentinel);
+  // Load more button handler
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      loadMore();
     }
-
-    return () => {
-      if (sentinel) {
-        observer.unobserve(sentinel);
-      }
-    };
-  }, [hasMore, loading, pokemon.length]);
+  };
 
   // Team building functions
   const addToTeam = (pokemon) => {
@@ -503,22 +488,42 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Infinite Scroll Sentinel */}
-            <div id="scroll-sentinel" className="h-10 flex items-center justify-center mt-8">
-              {loading && (
-                <div className="flex items-center text-blue-600">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Loading more Pokemon...
+            {/* Load More Button */}
+            <div className="flex justify-center mt-8">
+              {hasMore ? (
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loading}
+                  className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    loading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      <span>Load More Pokemon</span>
+                      <span className="text-sm opacity-75">({pokemon.length} of {totalPokemon})</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="text-center">
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-3 rounded-lg">
+                    <span className="font-semibold">🎉 All Pokemon Loaded!</span>
+                    <p className="text-sm mt-1">You&apos;ve reached the end! ({pokemon.length} of {totalPokemon} Pokemon loaded)</p>
+                  </div>
                 </div>
               )}
-                             {!hasMore && pokemon.length > 0 && (
-                 <div className="text-gray-500 text-sm">
-                   You&apos;ve reached the end! ({pokemon.length} of {totalPokemon} Pokemon loaded)
-                 </div>
-               )}
             </div>
           </div>
         )}
@@ -551,10 +556,12 @@ export default function Home() {
                          <div className="relative">
                            {/* Main Image */}
                            <div className="relative mb-4">
-                             <img
+                             <Image
                                src={currentImage.url}
                                alt={selectedPokemon.name}
                                className="w-48 h-48 mx-auto"
+                               height={50}
+                               width={50}
                              />
                              
                              {/* Navigation Arrows */}
