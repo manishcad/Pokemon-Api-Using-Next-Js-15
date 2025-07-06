@@ -8,6 +8,7 @@ A Next.js 15 API wrapper for the PokeAPI with enhanced features, caching, and se
 - 🔍 **Search**: Search Pokemon by name
 - 🏷️ **Types**: Get Pokemon types with damage relations
 - ⚡ **Abilities**: Fetch Pokemon abilities
+- ⚡ **Create Team**: Battle with an Ai
 - 📄 **Pagination**: Built-in pagination support
 - 🚀 **Caching**: Optimized caching with stale-while-revalidate
 - 🛡️ **Error Handling**: Comprehensive error handling and validation
